@@ -2,28 +2,57 @@
 
 namespace App\Support;
 
-use Laravel\Prompts\Spinner;
-use Surgiie\Console\Command;
+use App\Exceptions\Commands\ExitException;
+use Illuminate\Console\Contracts\NewLineAware;
+use Illuminate\Console\View\Components\Factory as ConsoleViewFactory;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\View;
+use LaravelZero\Framework\Commands\Command;
+use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
+
+use function Termwind\render;
+use function Termwind\renderUsing;
 
 abstract class BaseCommand extends Command
 {
     /**
-     * Run a task using the given title and callback.
-     * @param string  $title
-     * @param \Closure|callable|null  $task
-     * @return bool|null
+     * The options that are not defined on the command.
      */
-    public function task(string $title = '', $task = null): bool
+    protected Collection $arbitraryOptions;
+
+    /**
+     * Constuct a new Command instance.
+     */
+    public function __construct()
     {
-        $result = (new Spinner($title))->spin(
-            $task,
-            $title,
-        );
+        parent::__construct();
 
-        $this->output->writeln(
-            "  $title: ".($result !== false ? '<info>Successful</info>' : '<fg=red>Failed</fg=red>')
-        );
+        $this->arbitraryOptions = collect();
 
-        return $result !== false;
+        // Ignore validation errors for arbitrary options support.
+        $this->ignoreValidationErrors();
+    }
+
+    /**
+     * Initialize the command input/ouput objects.
+     */
+    protected function initialize(InputInterface $input, OutputInterface $output): void
+    {
+        // parse arbitrary options for variable data.
+        $tokens = $input instanceof ArrayInput ? invade($input)->parameters : invade($input)->tokens;
+        $parser = new CommandOptionsParser($tokens);
+
+        $definition = $this->getDefinition();
+
+        foreach ($parser->parse() as $name => $data) {
+            if (! $definition->hasOption($name)) {
+                $this->arbitraryOptions->put($name, $data['value']);
+                $this->addOption($name, mode: $data['mode']);
+            }
+        }
+        //rebind input definition
+        $input->bind($definition);
     }
 }

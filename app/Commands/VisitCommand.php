@@ -2,9 +2,10 @@
 
 namespace App\Commands;
 
+use Laravel\Dusk\Browser;
 use Illuminate\Support\Str;
 use App\Support\BaseCommand;
-use Laravel\Dusk\Browser;
+use LaravelZero\Framework\Commands\Command;
 
 class VisitCommand extends BaseCommand
 {
@@ -16,31 +17,12 @@ class VisitCommand extends BaseCommand
     protected $signature = 'visit {url : The url to visit.}';
 
     /**
-     * Allow the command to accept arbitrary options.
-     *
-     * @var bool
-     */
-    protected bool $arbitraryOptions = true;
-
-    /**
      * The description of the command.
      *
      * @var string
      */
     protected $description = 'Visit site and perform actions/make assertions.';
 
-    /**
-     * The validation rules for the input/options.
-     */
-    public function rules(): array
-    {
-        return [
-            'url'=>[
-                'required',
-                'url',
-            ],
-        ];
-    }
     /**
      * Parse function arguments from an option value.
      *
@@ -92,24 +74,22 @@ class VisitCommand extends BaseCommand
      */
     public function handle()
     {
+        if(! Str::isUrl($this->argument('url'))){
+            $this->components->error("The url argument is invalid, must be full url including protocol.");
+            return 1;
+        }
+
+
         $this->browse(function ($browser){
             // see https://github.com/laravel/dusk/issues/781
             invade($browser)->browser->resolver->prefix = 'html';
 
-            $browser = $browser->visit($this->data->get("url"));
+            $browser = $browser->visit($this->argument("url"));
 
-            global $argv;
+            foreach($this->arbitraryOptions as $name=>$option){
+                $value = is_string($option) ? $option : "";
 
-            foreach($argv as $option){
-                if(!str_starts_with($option, "--")){
-                    continue;
-                }
-
-                $value = strpos($option, "=") != false ? Str::after($option, "=") : "";
-
-                $option = Str::before(str_replace("--", "", $option), "=");
-
-                $method = Str::camel($option);
+                $method = Str::camel($name);
                 $arguments = $this->parseActionArguments($value);
 
                 // allow screenshots to be saved to a custom path

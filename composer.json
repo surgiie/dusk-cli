@@ -8,8 +8,8 @@
         "intonate/tinker-zero": "^1.2",
         "laravel-zero/framework": "^10.0",
         "nunomaduro/laravel-console-dusk": "^1.11",
-        "surgiie/console": "^4.0.0",
         "pestphp/pest": "^1.21.3",
+        "spatie/invade": "^2.0",
         "symfony/yaml": "^6.2"
     },
     "require-dev": {
