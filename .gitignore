@@ -11,3 +11,4 @@ composer.lock
 *.rendered
 *.rendered.*
 .dusk-cli
+.php-cs-fixer.cache

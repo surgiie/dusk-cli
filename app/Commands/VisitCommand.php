@@ -5,7 +5,8 @@ namespace App\Commands;
 use Laravel\Dusk\Browser;
 use Illuminate\Support\Str;
 use App\Support\BaseCommand;
-use LaravelZero\Framework\Commands\Command;
+use Illuminate\Support\Arr;
+use NunoMaduro\LaravelConsoleDusk\ConsoleBrowser;
 
 class VisitCommand extends BaseCommand
 {
@@ -34,7 +35,7 @@ class VisitCommand extends BaseCommand
         // Split on a comma not preceded by a backslash, optionally followed by spaces
         $parts = preg_split('/(?<!\\\\),\s*/', $value);
 
-        return array_filter(array_map(function($part) {
+        return array_filter(array_map(function ($part) {
             // Replace escaped comma with literal comma
             $value = str_replace('\\,', ',', trim($part));
 
@@ -59,7 +60,7 @@ class VisitCommand extends BaseCommand
      */
     protected function configureScreenshot(array $arguments)
     {
-        if(!isset($arguments[0])){
+        if (!isset($arguments[0])) {
             throw new \InvalidArgumentException("Screenshot path not specified.");
         }
 
@@ -68,40 +69,59 @@ class VisitCommand extends BaseCommand
         return $arguments;
     }
     /**
+     * Call an assertion/action method.
+     *
+     * @param ConsoleBrowser $browser
+     * @param string $method
+     * @param string |array $option
+     *
+     */
+    protected function callBrowserMethod(ConsoleBrowser $browser, string $method, string | array $option)
+    {
+        $value = is_string($option) ? $option : "";
+
+        $method = Str::camel($method);
+        $arguments = $this->parseActionArguments($value);
+
+        // allow screenshots to be saved to a custom path
+        if ($method == "screenshot") {
+            $arguments = $this->configureScreenshot($arguments);
+        }
+
+        try {
+            $browser->$method(...$arguments);
+        } catch (\Throwable $e) {
+            exit(1);
+        }
+    }
+    /**
      * Execute the console command.
      *
      * @return int
      */
     public function handle()
     {
-        if(! Str::isUrl($this->argument('url'))){
+        if (! Str::isUrl($this->argument('url'))) {
             $this->components->error("The url argument is invalid, must be full url including protocol.");
             return 1;
         }
 
 
-        $this->browse(function ($browser){
+        $this->browse(function ($browser) {
             // see https://github.com/laravel/dusk/issues/781
             invade($browser)->browser->resolver->prefix = 'html';
 
             $browser = $browser->visit($this->argument("url"));
-
-            foreach($this->arbitraryOptions as $name=>$option){
-                $value = is_string($option) ? $option : "";
-
-                $method = Str::camel($name);
-                $arguments = $this->parseActionArguments($value);
-
-                // allow screenshots to be saved to a custom path
-                if($method == "screenshot"){
-                    $arguments = $this->configureScreenshot($arguments);
+            foreach ($this->arbitraryOptions as $method => $option) {
+                $options = $option;
+                if (!is_array($options)) {
+                    $options = Arr::wrap($options);
                 }
 
-                try {
-                    $browser->$method(...$arguments);
-                }catch (\Throwable $e){
-                    $this->exit($e->getMessage());
+                foreach ($options as $option) {
+                    $this->callBrowserMethod($browser, $method, $option);
                 }
+
             }
         });
 
