@@ -6,14 +6,14 @@ A php command line interface for [Laravel Dusk](https://laravel.com/docs/10.x/du
 
 ## Installation
 
-- Install Chrome:
-- Install CLI:
+-   Install Chrome:
+-   Install CLI:
 
 ```bash
  composer global require surgiie/dusk-cli
 ```
 
-- Install Driver:
+-   Install Driver:
 
 ```bash
 dusk install:chrome-driver
@@ -29,7 +29,7 @@ dusk visit https://google.com
 
 ## Perform Actions
 
-All methods in the [Laravel Dusk API](https://laravel.com/docs/10.x/dusk) are performed by passing the method name as a kebab case command option.
+All methods in the [Laravel Dusk API](https://laravel.com/docs/11.x/dusk) are performed by passing the method name as a kebab case command option.
 
 For example, to call the `assertSee` method, you would use the `--assert-see` option:
 
@@ -38,7 +38,6 @@ dusk visit https://laravel.com --assert-see="Laravel"
 ```
 
 **Note** - Please note that all actions have NOT been tested thoroughly so please report any issues you find.
-
 
 ### Passing Arguments To Methods.
 

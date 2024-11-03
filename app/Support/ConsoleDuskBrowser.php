@@ -2,9 +2,8 @@
 
 namespace App\Support;
 
-
-use Laravel\Dusk\Browser;
 use Illuminate\Console\Command;
+use Laravel\Dusk\Browser;
 use NunoMaduro\LaravelConsoleDusk\ConsoleBrowser;
 
 class ConsoleDuskBrowser extends ConsoleBrowser
@@ -14,6 +13,6 @@ class ConsoleDuskBrowser extends ConsoleBrowser
         parent::__construct($command, $browser);
 
         // see https://github.com/laravel/dusk/issues/781
-        $this->browser->resolver->prefix = "html";
+        $this->browser->resolver->prefix = 'html';
     }
 }

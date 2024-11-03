@@ -2,13 +2,11 @@
 
 namespace App\Support;
 
-use Laravel\Dusk\Browser;
 use Illuminate\Console\Command;
-use App\Support\ConsoleDuskBrowser;
+use Laravel\Dusk\Browser;
 use NunoMaduro\LaravelConsoleDusk\ConsoleBrowserFactory;
 use NunoMaduro\LaravelConsoleDusk\Contracts\ConsoleBrowserContract;
 use NunoMaduro\LaravelConsoleDusk\Contracts\Drivers\DriverContract;
-
 
 class ConsoleDuskBrowserFactory extends ConsoleBrowserFactory
 {

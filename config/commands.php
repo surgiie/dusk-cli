@@ -1,7 +1,5 @@
 <?php
 
-use Laravel\Tinker\Console\TinkerCommand;
-
 return [
 
     /*
@@ -42,7 +40,6 @@ return [
     */
 
     'add' => [
-        \Intonate\TinkerZero\Console\TinkerZeroCommand::class,
     ],
 
     /*
@@ -79,7 +76,6 @@ return [
             Pest\Laravel\Commands\PestTestCommand::class,
             \Laravel\Dusk\Console\ChromeDriverCommand::class,
             \Pest\Laravel\Commands\PestDuskCommand::class,
-            \Laravel\Tinker\Console\TinkerCommand::class
 
         ] as $cmd) {
             if (class_exists($cmd)) {

@@ -2,18 +2,11 @@
 
 namespace App\Support;
 
-use App\Exceptions\Commands\ExitException;
-use Illuminate\Console\Contracts\NewLineAware;
-use Illuminate\Console\View\Components\Factory as ConsoleViewFactory;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\View;
 use LaravelZero\Framework\Commands\Command;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-
-use function Termwind\render;
-use function Termwind\renderUsing;
 
 abstract class BaseCommand extends Command
 {

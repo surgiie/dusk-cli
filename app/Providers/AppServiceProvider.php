@@ -2,8 +2,8 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
 use App\Support\ConsoleDuskBrowserManager;
+use Illuminate\Support\ServiceProvider;
 use NunoMaduro\LaravelConsoleDusk\Contracts\ManagerContract;
 
 class AppServiceProvider extends ServiceProvider
@@ -13,9 +13,7 @@ class AppServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function boot()
-    {
-    }
+    public function boot() {}
 
     /**
      * Register any application services.
@@ -25,7 +23,7 @@ class AppServiceProvider extends ServiceProvider
     public function register()
     {
         $this->app->bind(ManagerContract::class, function ($app) {
-            return new ConsoleDuskBrowserManager();
+            return new ConsoleDuskBrowserManager;
         });
     }
 }

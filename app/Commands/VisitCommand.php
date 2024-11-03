@@ -2,11 +2,14 @@
 
 namespace App\Commands;
 
-use Laravel\Dusk\Browser;
-use Illuminate\Support\Str;
 use App\Support\BaseCommand;
+use BadMethodCallException;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
+use Laravel\Dusk\Browser;
 use NunoMaduro\LaravelConsoleDusk\ConsoleBrowser;
+use PHPUnit\Framework\ExpectationFailedException;
+use PHPUnit\TextUI\Configuration\Registry;
 
 class VisitCommand extends BaseCommand
 {
@@ -27,7 +30,7 @@ class VisitCommand extends BaseCommand
     /**
      * Parse function arguments from an option value.
      *
-     * @param string $input
+     * @param  string  $input
      * @return array
      */
     protected function parseActionArguments(string $value)
@@ -48,6 +51,7 @@ class VisitCommand extends BaseCommand
                 is_numeric($value) => floatval($value),
                 default => $value,
             };
+
             return $value;
         }, $parts));
     }
@@ -55,45 +59,50 @@ class VisitCommand extends BaseCommand
     /**
      * Configure the screenshot path.
      *
-     * @param array $arguments
+     * @param  string  $path
      * @return array
      */
     protected function configureScreenshot(array $arguments)
     {
-        if (!isset($arguments[0])) {
-            throw new \InvalidArgumentException("Screenshot path not specified.");
+        if (! isset($arguments[0])) {
+            throw new \InvalidArgumentException('Screenshot path not specified.');
         }
 
         Browser::$storeScreenshotsAt = dirname($arguments[0]);
 
         return $arguments;
     }
+
     /**
      * Call an assertion/action method.
-     *
-     * @param ConsoleBrowser $browser
-     * @param string $method
-     * @param string |array $option
-     *
      */
-    protected function callBrowserMethod(ConsoleBrowser $browser, string $method, string | array $option)
+    protected function callBrowserMethod(ConsoleBrowser $browser, string $method, string|array $option)
     {
-        $value = is_string($option) ? $option : "";
+        $value = is_string($option) ? $option : '';
 
         $method = Str::camel($method);
         $arguments = $this->parseActionArguments($value);
 
         // allow screenshots to be saved to a custom path
-        if ($method == "screenshot") {
+        if ($method == 'screenshot') {
             $arguments = $this->configureScreenshot($arguments);
         }
-
         try {
             $browser->$method(...$arguments);
-        } catch (\Throwable $e) {
+        } catch (BadMethodCallException) {
+            $this->components->error("Invalid browser action method: $method");
+            exit(1);
+        } catch (ExpectationFailedException | \TypeError $e) {
+            // certain assertion/browser methods throw a TypeError, for now if this occurs, handle it until proper ExpectationFailedException is thrown
+            // see: https://github.com/nunomaduro/laravel-console-dusk/issues/41
+            if ($e instanceof \TypeError && ! Str::contains($e->getMessage(), "PHPUnit\TextUI\Configuration\Configuration, null returned")) {
+                throw $e;
+            }
+
             exit(1);
         }
     }
+
     /**
      * Execute the console command.
      *
@@ -102,19 +111,19 @@ class VisitCommand extends BaseCommand
     public function handle()
     {
         if (! Str::isUrl($this->argument('url'))) {
-            $this->components->error("The url argument is invalid, must be full url including protocol.");
+            $this->components->error('The url argument is invalid, must be full url including protocol.');
+
             return 1;
         }
-
 
         $this->browse(function ($browser) {
             // see https://github.com/laravel/dusk/issues/781
             invade($browser)->browser->resolver->prefix = 'html';
 
-            $browser = $browser->visit($this->argument("url"));
+            $browser = $browser->visit($this->argument('url'));
             foreach ($this->arbitraryOptions as $method => $option) {
                 $options = $option;
-                if (!is_array($options)) {
+                if (! is_array($options)) {
                     $options = Arr::wrap($options);
                 }
 
