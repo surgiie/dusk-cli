@@ -1,0 +1,14 @@
+/vendor
+/.idea
+/.vscode
+/.vagrant
+.phpunit.result.cache
+testing
+storage/testing/mock
+.compiled
+storage/laravel-console-dusk
+composer.lock
+*.rendered
+*.rendered.*
+.dusk-cli
+.php-cs-fixer.cache
